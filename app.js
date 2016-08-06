@@ -10,10 +10,12 @@ const path = require('path')
 const TimeoutError = Bluebird.TimeoutError
 
 
-const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
+// const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
+const baseURL = 'https://www.rcwilley.com/?q='
+
 const cameraCount = argv.c || argv.count || 10
-const cameraStart = argv.s || argv.start || 0
-const concurrency = 5
+const cameraStart = argv.s || argv.start || 4000000
+const concurrency = 4000100
 const cameraTimeout = 10000
 const absentMessage = 'No camera at this address'
 const fileTitle = '<h1>Cameras</h1>\r'
