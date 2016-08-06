@@ -10,9 +10,9 @@ const path = require('path')
 
 
 const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
-const cameraCount = argv.c || argv.count || 10
+const cameraCount = argv.c || argv.count || 2000
 const cameraStart = argv.s || argv.start || 0
-const concurrency = 3
+const concurrency = 50
 const cameraTimeout = 5000
 const absentMessage = 'No camera at this address'
 const fileTitle = '<h1>Cameras</h1>\r'
@@ -24,6 +24,7 @@ const writeFile = Bluebird.promisify(fs.writeFile)
 let scrapes = getCameras(cameraCount, {
 	cameraStart,
 	cameraTimeout,
+	concurrency
 })
 	.then(writeLinkFile)
 	.catch(ex => {
@@ -33,6 +34,7 @@ let scrapes = getCameras(cameraCount, {
 	.finally(() => process.exit(0))
 
 function getCamera(opts, item, idx) {
+	console.log('get item', idx)
 	const url = baseURL + (idx + opts.cameraStart)
 	const camera = Scraper.StaticScraper.create(url);
 	return Bluebird.resolve(camera.scrape(($) => {
@@ -51,7 +53,7 @@ function getCamera(opts, item, idx) {
 
 function getCameras(count, opts) {
 	let cameras = new Array(count).fill(null)
-	return Bluebird.all(cameras.map(getCamera.bind(this, opts)))
+	return Bluebird.map(cameras, getCamera.bind(this, opts), {concurrency: opts.concurrency})
 }
 
 function buildCamera(id, url, title){
