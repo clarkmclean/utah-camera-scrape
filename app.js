@@ -29,7 +29,7 @@ let scrapes = getCameras(cameraCount, {
 	.catch(ex => {
 		console.log('took too long', ex)
 	})
-	.then(uploadFile('index.html'))
+	.then(uploadFile)
 	.finally(() => process.exit(0))
 
 function getCamera(opts, item, idx) {
@@ -80,10 +80,7 @@ function writeLinkFile(cameras){
 	return writeFile('index.html', file)
 }
 
-function uploadFile(filePath, cb){
-	console.log(__dirname)
-	ghpages.publish(path.join(__dirname), (err) => {
-		console.log(err)
-	})
+function uploadFile(){
+	return Bluebird.fromCallback(cb => ghpages.publish(path.join(__dirname), cb))
 }
 
