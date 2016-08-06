@@ -7,13 +7,14 @@ const Bluebird = require('bluebird')
 const argv = require('yargs').argv
 const ghpages = require('gh-pages')
 const path = require('path')
+const TimeoutError = Bluebird.TimeoutError
 
 
 const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
-const cameraCount = argv.c || argv.count || 2000
+const cameraCount = argv.c || argv.count || 10
 const cameraStart = argv.s || argv.start || 0
-const concurrency = 50
-const cameraTimeout = 5000
+const concurrency = 5
+const cameraTimeout = 10000
 const absentMessage = 'No camera at this address'
 const fileTitle = '<h1>Cameras</h1>\r'
 
@@ -27,10 +28,10 @@ let scrapes = getCameras(cameraCount, {
 	concurrency
 })
 	.then(writeLinkFile)
-	.catch(ex => {
-		console.log('took too long', ex)
-	})
 	.then(uploadFile)
+	.catch(ex => {
+		console.error('Unhandled exception', ex)
+	})
 	.finally(() => process.exit(0))
 
 function getCamera(opts, item, idx) {
@@ -41,13 +42,12 @@ function getCamera(opts, item, idx) {
 		return $("h3").text()
 	}))
 	.timeout(opts.cameraTimeout)
-	.reflect()
-	.then((res) => {
-		if (res.isRejected()) return
-		const val = res.value()
-
+	.then((val) => {
 		if (val) console.info(val, idx + opts.cameraStart)
 		return val && buildCamera(idx + opts.cameraStart, url, val)
+	})
+	.catch(TimeoutError, (ex) => {
+		console.warn('Promise timed out.')
 	})
 }
 
