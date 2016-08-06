@@ -15,7 +15,7 @@ const baseURL = 'https://www.rcwilley.com/?q='
 
 const cameraCount = argv.c || argv.count || 1000
 const cameraStart = argv.s || argv.start || 4000000
-const concurrency = 5
+const concurrency = 1000
 const cameraTimeout = 10000
 const absentMessage = 'No camera at this address'
 const fileTitle = '<h1>Cameras</h1>\r'
