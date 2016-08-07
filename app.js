@@ -10,16 +10,15 @@ const path = require('path')
 const TimeoutError = Bluebird.TimeoutError
 
 
-// const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
-const baseURL = 'https://www.rcwilley.com/?q='
+const baseURL = 'https://cameras.liveviewtech.com/network_cameras/public_live_cameras_video/'
 
-const cameraCount = argv.c || argv.count || 1000
-const cameraStart = argv.s || argv.start || 4000000
-const concurrency = 1000
-const cameraTimeout = 10000
+const cameraCount = argv.c || argv.count || 2360
+const cameraStart = argv.s || argv.start || 0
+const concurrency = 3
+const cameraTimeout = 6000
 const absentMessage = 'No camera at this address'
 const fileTitle = '<h1>Cameras</h1>\r'
-const query = 'h1'
+const query = 'h3'
 
 let cameras = new Array(cameraCount)
 
@@ -29,7 +28,7 @@ let scrapes = getCameras(cameraCount, {
 	cameraStart,
 	cameraTimeout,
 	concurrency,
-	query
+	query,
 })
 	.then(writeLinkFile)
 	.then(uploadFile)
@@ -41,7 +40,10 @@ let scrapes = getCameras(cameraCount, {
 function getCamera(opts, item, idx) {
 	console.log('get item', idx)
 	const url = baseURL + (idx + opts.cameraStart)
-	const camera = Scraper.StaticScraper.create(url);
+	const camera = Scraper.StaticScraper.create(url)
+		.catch((ex) => {
+			console.error('Scraper Exception', ex)
+		})
 	return Bluebird.resolve(camera.scrape(($) => {
 		return $(opts.query).text()
 	}))
@@ -83,7 +85,7 @@ function writeLinkFile(cameras){
 				<br>
 		`}, fileTitle)
 
-	return writeFile('index.html', file)
+	return writeFile(cameraStart + '-' + (cameraStart + cameraCount) + '.html', file)
 }
 
 function uploadFile(){
